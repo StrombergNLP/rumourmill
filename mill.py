@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 
-import rm
+from rm import RumourMill
 
-rm.load_rumours('rumours/')
-rm.init_pi()
-rm.init_printer()
+mill = RumourMill()
+
+mill.load_rumours('rumours/')
+mill.init_pi()
+mill.init_printer()
 
 while true:
-	rm.wait_for_activation()
-	params = rm.capture_params()
-	rumour = rm.find_rumour(params)
-	rm.print_rumour(rumour)
+	mill.wait_for_activation()
+	params = mill.capture_params()
+	rumour = mill.find_rumour(params)
+	mill.print_rumour(rumour)
