@@ -93,34 +93,34 @@ class RumourMill:
 			tense = 'future'
 
 		# 12 step switch here
-    first_state = GPIO.input(self.twlvStepOne)
-    # second_state = GPIO.input(self.twlvStepTwo)
-    third_state = GPIO.input(self.twlvStepThree)
-    fourth_state = GPIO.input(self.twlvStepFour)
-    fifth_state = GPIO.input(self.twlvStepFive)
-    sixth_state = GPIO.input(self.twlvStepSix)
-    
-    twelve_select = None
-    if first_state:
-        twelve_select = 0
-    # elif second_state == False:
-        # new_switch_position = "1"
-    elif third_state:
-        twelve_select = 2
-    elif fourth_state:
-        twelve_select = 3
-    elif fifth_state:
-        twelve_select = 4
-    elif not sixth_state:
-        twelve_select = 5
-    else:
-        twelve_select = None
+		first_state = GPIO.input(self.twlvStepOne)
+		# second_state = GPIO.input(self.twlvStepTwo)
+		third_state = GPIO.input(self.twlvStepThree)
+		fourth_state = GPIO.input(self.twlvStepFour)
+		fifth_state = GPIO.input(self.twlvStepFive)
+		sixth_state = GPIO.input(self.twlvStepSix)
+		
+		twelve_select = None
+		if first_state:
+			twelve_select = 0
+		# elif second_state == False:
+			# new_switch_position = "1"
+		elif third_state:
+			twelve_select = 2
+		elif fourth_state:
+			twelve_select = 3
+		elif fifth_state:
+			twelve_select = 4
+		elif not sixth_state:
+			twelve_select = 5
+		else:
+			twelve_select = None
 
-    slider_position = self.chan0.value
-    temperature = _remap_range(slider_position, 0, 65535, 0, 10)
-    temperature = temperature / 10
+		slider_position = self.chan0.value
+		temperature = _remap_range(slider_position, 0, 65535, 0, 10)
+		temperature = temperature / 10
 
-	return {'genre':twelve_select, 'time':tense, 'temperature':temperature}
+		return {'genre':twelve_select, 'time':tense, 'temperature':temperature}
 
 	def find_rumour(self, genre, temperature):
 		"""Get a rumour from the store that matches the given criteria
