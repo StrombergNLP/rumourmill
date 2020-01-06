@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 
 from Adafruit_Thermal import *
 
@@ -10,7 +10,7 @@ import textwrap
 tw = textwrap.TextWrapper(width=32) 
 
 rumours = []
-for line in open('nohead_t05.jsonl', 'r'):
+for line in open('data/nohead_t05.jsonl', 'r'):
     rumours.append(json.loads(line.strip()))
 
 random.shuffle(rumours)
