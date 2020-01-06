@@ -225,9 +225,11 @@ class RumourMill:
         self.printer.feed(1)
 
         self.printer.justify = adafruit_thermal_printer.JUSTIFY_RIGHT
+        metainfo = 'METAINFO: '
         for k in r.keys():
-            if k not in ('text', 'body', 'title', 'temperature', 'genre', 'nucprob'):
-                self.printer.print(str(k) + ':' + str(r[k]))
+            if k not in ('text', 'body', 'title'):
+                metainfo += '#' + str(k) + '@' + str(r[k])
+        self.printer.print(metainfo)
 
         self.printer.bold = True
         self.printer.justify = adafruit_thermal_printer.JUSTIFY_CENTER
