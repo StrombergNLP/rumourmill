@@ -8,7 +8,7 @@ import random
 import re
 import textwrap
 import time
-
+import RPi.GPIO as GPIO
 
 
 class RumourMill:
@@ -30,7 +30,7 @@ class RumourMill:
 
 	# For 12 step switch channels
 	twlvStepOne = 18
-	# twlvStepTwo = 18
+	twlvStepTwo = 23
 	twlvStepThree = 24
 	twlvStepFour = 25
 	twlvStepFive = 12
@@ -248,8 +248,7 @@ class RumourMill:
 		#rumour['text'] = text
 		return rumour
 
-	def init_pi():
-		import RPi.GPIO as GPIO
+	def init_pi(self):
 		GPIO.setmode(GPIO.BCM)
 
 		import os
@@ -277,7 +276,7 @@ class RumourMill:
 		GPIO.setup(twlvStepFive, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 		GPIO.setup(twlvStepSix, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
-	def init_printer():
+	def init_printer(self):
 		import Adafruit_Thermal
 		self.printer = Adafruit_Thermal.Adafruit_Thermal("/dev/serial0", 19200, timeout=5)
 
