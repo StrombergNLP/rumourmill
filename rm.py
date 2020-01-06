@@ -3,6 +3,7 @@
 import collections
 import glob
 import json
+import math
 import nltk
 import random
 import re
@@ -88,29 +89,29 @@ class RumourMill:
 		params (dict): a dictionary of setting names and values
 		"""
 		tense = 'present'
-		if GPIO.input(self.toggleup):
+		if not GPIO.input(self.toggleup):
 			tense = 'past'
-		elif GPIO.input(self.toggledown):
+		elif not GPIO.input(self.toggledown):
 			tense = 'future'
 
 		# 12 step switch here
 		first_state = GPIO.input(self.twlvStepOne)
-		# second_state = GPIO.input(self.twlvStepTwo)
+		second_state = GPIO.input(self.twlvStepTwo)
 		third_state = GPIO.input(self.twlvStepThree)
 		fourth_state = GPIO.input(self.twlvStepFour)
 		fifth_state = GPIO.input(self.twlvStepFive)
 		sixth_state = GPIO.input(self.twlvStepSix)
 		
 		twelve_select = None
-		if first_state:
+		if not first_state:
 			twelve_select = 0
-		# elif second_state == False:
-			# new_switch_position = "1"
-		elif third_state:
+		elif not second_state:
+			twelve_select = "1"
+		elif not third_state:
 			twelve_select = 2
-		elif fourth_state:
+		elif not fourth_state:
 			twelve_select = 3
-		elif fifth_state:
+		elif not fifth_state:
 			twelve_select = 4
 		elif not sixth_state:
 			twelve_select = 5
@@ -118,8 +119,10 @@ class RumourMill:
 			twelve_select = None
 
 		slider_position = self.chan0.value
-		temperature = _remap_range(slider_position, 0, 65535, 0, 10)
-		temperature = temperature / 10
+		temperature = self._remap_range(slider_position, 0, 65535, 0, 18500)
+		if temperature > 0:
+			temperature = math.log(temperature)
+		temperature = int(temperature) / 10
 
 		return {'genre':twelve_select, 'time':tense, 'temperature':temperature}
 
@@ -263,24 +266,25 @@ class RumourMill:
 		# Creates chip select
 		self.cs = digitalio.DigitalInOut(board.D22)
 		# Creates mcp object
-		self.mcp = MCP.MCP3008(spi, cs)
+		self.mcp = MCP.MCP3008(self.spi, self.cs)
 		# Creates analog input channel on pin 0
-		self.chan0 = adafruit_mcp3xxxAnalogIn(mcp, MCP.P0)
+		self.chan0 = adafruit_mcp3xxx.analog_in.AnalogIn(self.mcp, MCP.P0)
 
 		# Assigns channels to inputs for switches (toggle and 12 step)
-		GPIO.setup(toggleup, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(toggledown, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(twlvStepOne, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(twlvStepThree, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(twlvStepFour, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(twlvStepFive, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-		GPIO.setup(twlvStepSix, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.toggleup, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.toggledown, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.twlvStepOne, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.twlvStepTwo, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.twlvStepThree, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.twlvStepFour, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.twlvStepFive, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+		GPIO.setup(self.twlvStepSix, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 	def init_printer(self):
 		import Adafruit_Thermal
 		self.printer = Adafruit_Thermal.Adafruit_Thermal("/dev/serial0", 19200, timeout=5)
 
-	def _remap_range(value, left_min, left_max, right_min, right_max):
+	def _remap_range(self, value, left_min, left_max, right_min, right_max):
 		left_span = left_max - left_min
 		right_span = right_max - right_min
 	    
