@@ -3,6 +3,7 @@
 import collections
 import glob
 import json
+import nltk
 import random
 import re
 import textwrap
@@ -145,7 +146,7 @@ class RumourMill:
 			return False # printer hasn't been initialised yet
 			
 		# clean up strings
-		title = re.sub(r'[^A-Za-z\s0-9,.;:.!]', '', r['title'])
+		title = re.sub(r'[^A-Za-z\s0-9,.;:.!\'"&\[\]\(\)]', '', r['title'])
 		print('==>', title)
 		body = re.sub(r'[^A-Za-z\s0-9,.;:.!]', '', r['body'])
 		print('-->', body)
@@ -201,17 +202,50 @@ class RumourMill:
 	def clean_rumour(self, rumour):
 		""" take a rumour object, and clean it up
 		"""
-		if ' Text: ' in rumour['text']:
-		    fulltitle, body = rumour['text'].split(' Text: ')
-		    title = fulltitle.replace(rumour['prefix'], '').strip()
-		elif ' Title: ' in rumour['text']:
-		    fulltitle, body = rumour['text'].split(' Title: ')
-		    title = fulltitle.replace(rumour['prefix'], '').strip()
+		text = rumour['text']
+		strip_strings = ('Share this article', 'RELATED ARTICLES', 
+			'Story highlights', '(CNN)', '&gt;', 
+			"Chat with us in Facebook Messenger. Find out what's happening in the world as it unfolds.",
+			'JUST WATCHED', 'MUST WATCH', 'Read More', 'Watch more!', 'SPONSORED:',
+			'Getty Images')
+		for s in strip_strings:
+			text = text.replace(s, '')
+		text = re.sub(r'By [A-Za-z]+ [A-Za-z]+, .+?\n ', '', text)
+		text = re.sub(r'\[([^\]]+)\]\([^\)]+\)', '\1', text) # markdown
+
+		if ' Text: ' in text:
+			fulltitle, body = text.split(' Text: ')
+			title = fulltitle.replace(rumour['prefix'], '').strip()
+		elif ' Title: ' in text:
+			fulltitle, body = text.split(' Title: ')
+			title = fulltitle.replace(rumour['prefix'], '').strip()
 		else:
-		    title = rumour['text'].split('\n')[1].strip()
-		    body = rumour['text'].replace(rumour['prefix'], '').replace(title, '').strip()
-		rumour['body'] = body
-		rumour['title'] = title
+			title = text.split('\n')[1].strip()
+			body = text.replace(rumour['prefix'], '').replace(title, '').strip()
+
+		title_sents = nltk.sent_tokenize(title)
+		if len(title_sents) > 1:
+			title = title_sents[0]
+			body = ' '.join(title_sents[1:]) + ' ' + body
+
+		if not title.strip():
+			if 'cnn.com' in rumour['prefix']:
+				lines = body.split("\n")
+				title = lines[0]
+				body = "\n".join(lines[1:]).strip()
+			else:
+				body_sents = nltk.sent_tokenize(body)
+				title = body_sents[0]
+				body = ' '.join(body_sents[1:])
+
+		if "\n" in title:
+			title_lines = title.split("\n")
+			title = title_lines[0]
+			body = '\n'.join(title_lines[1:]) + "\n" + body
+
+		rumour['body'] = body.strip()
+		rumour['title'] = title.strip()
+		#rumour['text'] = text
 		return rumour
 
 	def init_pi():
