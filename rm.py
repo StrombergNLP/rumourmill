@@ -144,9 +144,12 @@ class RumourMill:
         r (dict): a random rumour matching the criteria
         """
         genre = str(genre)
-        if genre in (3,4):
+        if genre in ('3','4'):
             genre += tense
         temperature = str(temperature)
+        print(genre, 'in', self.rumour_store.keys())
+        print(temperature, 'in', self.rumour_store[genre].keys())
+        print('entries:', len(self.rumour_store[genre][temperature]))
         return self.rumour_store[genre][temperature].pop()
 
     def print_rumour(self, r):
@@ -210,7 +213,7 @@ class RumourMill:
             tense = None
         else:
             genrename = self.GENRES[int(r['genre'][0])]
-            tense = r['genres'][1:]
+            tense = r['genre'][1:]
             
         self.printer.print('Wackiness: ' + str(r['temperature'] * 10) + '/10')
         self.printer.print('Genre: ' + genrename)
@@ -223,7 +226,7 @@ class RumourMill:
 
         self.printer.justify = adafruit_thermal_printer.JUSTIFY_RIGHT
         for k in r.keys():
-            if k not in ('text', 'body', 'title', 'temperature', 'genre'):
+            if k not in ('text', 'body', 'title', 'temperature', 'genre', 'nucprob'):
                 self.printer.print(str(k) + ':' + str(r[k]))
 
         self.printer.bold = True
